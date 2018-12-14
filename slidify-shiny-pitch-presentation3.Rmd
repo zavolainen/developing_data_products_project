@@ -15,9 +15,7 @@ Check yourself from my interactive Shiny app: https://zavolainen.shinyapps.io/de
 
 ## 2
 
-Slide with image
-
-<img src="http://pngimg.com/uploads/gravestone/gravestone_PNG100.png" width="500"/>
+<img src="https://github.com/zavolainen/developing_data_products_project/blob/master/Screenshot.png?raw=true" width="800"/>
 
 
 ## 3
