@@ -1,39 +1,50 @@
 library(shiny)
-shinyServer(function(input, output) {
-        # Get the data
-        dataUrl <- "https://raw.githubusercontent.com/zavolainen/developing_data_products_project/master/kuol_002_201700.csv"
-        deaths <- read.csv(dataUrl, stringsAsFactors=FALSE)
-        
+library(plotly)
+library(tibble)
+library(varhandle)
 
+
+server <- function(input, output) {
         
+        dataUrl <- "https://raw.githubusercontent.com/zavolainen/developing_data_products_project/master/kuol_002_201700.csv"
+        deaths <- t(read.csv(dataUrl, stringsAsFactors=FALSE))
+        colnames(deaths) <- deaths[1,]
+        deaths <- deaths[2:nrow(deaths),]
+        deaths <- rownames_to_column(as.data.frame(deaths), "Year")
+        deaths <- as.data.frame(lapply(deaths, gsub, pattern='X', replacement=''))
+        deaths <- unfactor(deaths)
         
-        output$plot1 <- renderPlot({
-                mpgInput <- input$sliderMPG
+        output$plot1 <- renderPlotly({
                 
-                plot(mtcars$mpg, mtcars$hp, xlab = "Miles Per Gallon", 
-                     ylab = "Horsepower", bty = "n", pch = 16,
-                     xlim = c(10, 35), ylim = c(50, 350))
-                if(input$showModel1){
-                        abline(model1, col = "red", lwd = 2)
-                }
-                if(input$showModel2){
-                        model2lines <- predict(model2, newdata = data.frame(
-                                mpg = 10:35, mpgsp = ifelse(10:35 - 20 > 0, 10:35 - 20, 0)
-                        ))
-                        lines(10:35, model2lines, col = "blue", lwd = 2)
+                minYear <- input$year[1]
+                maxYear <- input$year[2]
+                
+                deaths <- deaths[which(deaths$Year == minYear):(which(deaths$Year == maxYear)),]
+                
+                plot <- plot_ly(deaths, x = deaths$Year, hoverinfo = "text", 
+                                text = paste("Deaths by sex <br>Year: ", deaths$Year, "<br>Total: ", deaths$Any, 
+                                             "<br>Female: ", deaths$Female, "<br>Male: ", deaths$Male)) %>%
+                        layout(yaxis = list(rangemode = "tozero"))
+                
+                if(input$total){
+                        plot <- plot %>% add_trace(y = deaths$Any, name = 'Any sex',type = 'scatter', 
+                                                   mode = 'lines+markers')
+                } 
+                if(input$female){
+                        plot <- plot %>% add_trace(y = deaths$Female, name = 'Female',type = 'scatter', 
+                                                   mode = 'lines+markers')
+                } 
+                if(input$male){
+                        plot <- plot %>% add_trace(y = deaths$Male, name = 'Male',type = 'scatter', 
+                                                   mode = 'lines+markers')
                 }
                 
-                legend(25, 250, c("Model 1 Prediction", "Model 2 Prediction"), pch = 16, 
-                       col = c("red", "blue"), bty = "n", cex = 1.2)
-                points(mpgInput, model1pred(), col = "red", pch = 16, cex = 2)
-                points(mpgInput, model2pred(), col = "blue", pch = 16, cex = 2)
-        })
+                if (input$total == FALSE & input$female == FALSE & input$male == FALSE ) {
+                        suppressWarnings(plotly_empty())
+
+                } else {
+                        plot
+                }
+        })}
         
-        output$pred1 <- renderText({
-                model1pred()
-        })
         
-        output$pred2 <- renderText({
-                model2pred()
-        })
-})
