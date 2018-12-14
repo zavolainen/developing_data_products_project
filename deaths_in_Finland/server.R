@@ -3,7 +3,6 @@ library(plotly)
 library(tibble)
 library(varhandle)
 
-
 server <- function(input, output) {
         
         dataUrl <- "https://raw.githubusercontent.com/zavolainen/developing_data_products_project/master/kuol_002_201700.csv"
@@ -13,6 +12,10 @@ server <- function(input, output) {
         deaths <- rownames_to_column(as.data.frame(deaths), "Year")
         deaths <- as.data.frame(lapply(deaths, gsub, pattern='X', replacement=''))
         deaths <- unfactor(deaths)
+
+        output$source <- renderText({
+                "Source: Statistics Finland"
+        })
         
         output$plot1 <- renderPlotly({
                 

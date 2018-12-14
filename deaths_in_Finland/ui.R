@@ -1,5 +1,5 @@
 library(shiny)
-
+library(plotly)
 
 ui <- fluidPage(
         
@@ -11,6 +11,7 @@ ui <- fluidPage(
                 checkboxInput("female", "Show female", value = TRUE)
         ),
         mainPanel(
-                plotlyOutput("plot1")
+                plotlyOutput("plot1"),
+                textOutput("source")
         )
 )
